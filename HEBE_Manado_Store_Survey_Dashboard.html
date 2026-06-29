@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HEBE Offline Store Survey – Manado | Executive Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- =========================================================
+       GLOBAL STYLES
+  ========================================================= -->
+  <style>
+    /* ---------- Reset & Base ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --surface2:    #1e2530;
+      --border:      #30363d;
+      --accent:      #58a6ff;
+      --accent2:     #3fb950;
+      --accent3:     #f78166;
+      --accent4:     #d2a8ff;
+      --accent5:     #ffa657;
+      --text:        #e6edf3;
+      --text-muted:  #8b949e;
+      --gold:        #f5c518;
+      --radius:      12px;
+      --card-shadow: 0 4px 24px rgba(0,0,0,.45);
+
+      /* brand palette */
+      --loreal:   #c41e3a;
+      --paragon:  #2ea44f;
+      --feimei:   #7c3aed;
+      --neutral:  #4b6080;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ---------- Scrollbar ---------- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ---------- Layout Helpers ---------- */
+    .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+    .grid-2  { display: grid; grid-template-columns: repeat(2, 1fr);  gap: 20px; }
+    .grid-3  { display: grid; grid-template-columns: repeat(3, 1fr);  gap: 20px; }
+    .grid-4  { display: grid; grid-template-columns: repeat(4, 1fr);  gap: 20px; }
+    .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+
+    @media (max-width: 1100px) { .grid-4  { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width:  860px) { .grid-3  { grid-template-columns: 1fr; }
+                                  .grid-2  { grid-template-columns: 1fr; }
+                                  .grid-4  { grid-template-columns: 1fr; } }
+
+    /* ---------- Cards ---------- */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      animation: fadeUp .5s ease both;
+    }
+    .card + .card { animation-delay: .05s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0);   }
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .card-value {
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ---------- Section Headers ---------- */
+    .section { padding: 32px 0 8px; }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .section-header .badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 0 24px;
+    }
+
+    /* ---------- Hero Header ---------- */
+    #hero {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 60%, #1e2530 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 0 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 80% 20%, rgba(88,166,255,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(88,166,255,.12);
+      border: 1px solid rgba(88,166,255,.3);
+      color: var(--accent);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      margin-bottom: 14px;
+    }
+    #hero h1 {
+      font-size: clamp(26px, 4vw, 42px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    #hero h1 span { color: var(--accent); }
+    #hero p.subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 700px;
+      margin-bottom: 24px;
+    }
+    .meta-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .chip .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent2);
+      flex-shrink: 0;
+    }
+    .chip .dot.orange { background: var(--accent5); }
+    .chip .dot.purple { background: var(--accent4); }
+    .chip .dot.red    { background: var(--accent3); }
+
+    /* ---------- KPI Row ---------- */
+    #kpis { padding: 24px 0 0; }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp .45s ease both;
+    }
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .kpi-card.blue::after   { background: linear-gradient(90deg, var(--accent), transparent); }
+    .kpi-card.green::after  { background: linear-gradient(90deg, var(--accent2), transparent); }
+    .kpi-card.orange::after { background: linear-gradient(90deg, var(--accent5), transparent); }
+    .kpi-card.purple::after { background: linear-gradient(90deg, var(--accent4), transparent); }
+    .kpi-card.red::after    { background: linear-gradient(90deg, var(--accent3), transparent); }
+    .kpi-label  { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); }
+    .kpi-number { font-size: 32px; font-weight: 800; line-height: 1; }
+    .kpi-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .kpi-icon   { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 28px; opacity: .18; }
+
+    /* ---------- Chart Containers ---------- */
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .chart-wrap canvas { display: block; }
+
+    /* ---------- Table ---------- */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table thead tr {
+      background: var(--surface2);
+    }
+    .data-table th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:hover { background: rgba(255,255,255,.025); }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+
+    /* ---------- Trend Badges ---------- */
+    .trend {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .trend.growth  { background: rgba(63,185,80,.15);  color: #3fb950; }
+    .trend.decline { background: rgba(247,129,102,.15); color: #f78166; }
+    .trend.stable  { background: rgba(88,166,255,.12);  color: #58a6ff; }
+    .trend.no-data { background: rgba(139,148,158,.12); color: #8b949e; }
+
+    /* ---------- Brand Group Pills ---------- */
+    .group-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+    .group-pill.loreal  { background: rgba(196,30,58,.18);  color: #ff7088; }
+    .group-pill.paragon { background: rgba(46,164,79,.18);  color: #3fb950; }
+    .group-pill.feimei  { background: rgba(124,58,237,.18); color: #bf84ff; }
+
+    /* ---------- Bar (inline) ---------- */
+    .bar-cell { display: flex; align-items: center; gap: 8px; }
+    .bar-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+
+    /* ---------- Finding Cards ---------- */
+    .finding {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+    }
+    .finding-icon { font-size: 22px; flex-shrink: 0; }
+    .finding-text { font-size: 13px; line-height: 1.55; }
+    .finding-text strong { color: var(--text); }
+
+    /* ---------- Alert / Note ---------- */
+    .alert-note {
+      background: rgba(247,129,102,.08);
+      border: 1px solid rgba(247,129,102,.25);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+    .alert-note span { color: var(--accent3); font-weight: 600; }
+
+    /* ---------- Footer ---------- */
+    #footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 0;
+      text-align: center;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 48px;
+    }
+
+    /* ---------- Nav Dots ---------- */
+    .nav-indicator {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+    .nav-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+    .nav-dot:hover { background: var(--accent); transform: scale(1.3); }
+
+    /* ---------- Span helpers ---------- */
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    @media (max-width: 860px) { .span-2, .span-3 { grid-column: span 1; } }
+
+    /* ---------- Section anchor padding ---------- */
+    .section-anchor { scroll-margin-top: 24px; }
+
+    /* ---------- Scrolling tag ---------- */
+    .label-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 1px 7px;
+      border-radius: 4px;
+    }
+    .label-tag.blue   { background: rgba(88,166,255,.15); color: var(--accent); }
+    .label-tag.green  { background: rgba(63,185,80,.15);  color: var(--accent2); }
+    .label-tag.orange { background: rgba(255,166,87,.15); color: var(--accent5); }
+    .label-tag.purple { background: rgba(210,168,255,.15);color: var(--accent4); }
+    .label-tag.red    { background: rgba(247,129,102,.15);color: var(--accent3); }
+
+    /* ---------- Category pill grid ---------- */
+    .pill-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+    }
+    .pill.grow  { border-color: rgba(63,185,80,.4);  color: var(--accent2); }
+    .pill.shrink{ border-color: rgba(247,129,102,.4); color: var(--accent3); }
+
+    /* ---- responsive tables ---- */
+    .table-scroll { overflow-x: auto; }
+  </style>
+</head>
+<body>
+
+<!-- =====================================================
+     HERO HEADER
+===================================================== -->
+<header id="hero">
+  <div class="container">
+    <div class="hero-tag">📍 Manado, North Sulawesi — Offline Retail Survey 2026</div>
+    <h1>HEBE Offline Store Survey<br><span>Executive Dashboard</span></h1>
+    <p class="subtitle">
+      Store-stakeout deep-dive across channel owners, competitor brands, category rankings,
+      and real-customer purchase behaviour at key beauty retail accounts in Manado.
+    </p>
+    <div class="meta-chips">
+      <div class="chip"><span class="dot"></span>Survey Window: Jan 2026 – Present</div>
+      <div class="chip"><span class="dot orange"></span>Stores Surveyed: 2 of 6 planned</div>
+      <div class="chip"><span class="dot purple"></span>Sheets Covered: 6</div>
+      <div class="chip"><span class="dot red"></span>Competitor Brands Tracked: 21</div>
+      <div class="chip"><span class="dot"></span>Customer Interviews (1v1): 12</div>
+    </div>
+  </div>
+</header>
+
+<!-- =====================================================
+     KPI ROW
+===================================================== -->
+<section id="kpis" class="section-anchor">
+  <div class="container">
+    <div class="grid-4" style="padding:24px 0 0">
+
+      <div class="kpi-card blue" style="animation-delay:.00s">
+        <span class="kpi-icon">🏪</span>
+        <div class="kpi-label">Stores Surveyed</div>
+        <div class="kpi-number" style="color:var(--accent)">2</div>
+        <div class="kpi-detail">Sociolla Mantos · CuraBeauty Samratulangi</div>
+      </div>
+
+      <div class="kpi-card green" style="animation-delay:.06s">
+        <span class="kpi-icon">🚀</span>
+        <div class="kpi-label">New Stores Planned (Sociolla)</div>
+        <div class="kpi-number" style="color:var(--accent2)">2</div>
+        <div class="kpi-detail">Lippo Plaza Kairagi · Tomohon 1st Street</div>
+      </div>
+
+      <div class="kpi-card orange" style="animation-delay:.12s">
+        <span class="kpi-icon">🏆</span>
+        <div class="kpi-label">Competitor Groups Tracked</div>
+        <div class="kpi-number" style="color:var(--accent5)">3</div>
+        <div class="kpi-detail">L'Oréal · Paragon · Feimei</div>
+      </div>
+
+      <div class="kpi-card purple" style="animation-delay:.18s">
+        <span class="kpi-icon">📦</span>
+        <div class="kpi-label">Categories Deep-Dived</div>
+        <div class="kpi-number" style="color:var(--accent4)">14</div>
+        <div class="kpi-detail">Makeup + Skincare + Personal Care</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 1 — CHANNEL OVERVIEW
+===================================================== -->
+<section id="channels" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>1 · Channel Overview</h2>
+      <span class="badge">Store Expansion & Category Shifts</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="grid-3">
+
+      <!-- Store Expansion -->
+      <div class="card">
+        <div class="card-title">Store Network Status</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="storeStatusChart"></canvas>
+        </div>
+        <div class="alert-note">
+          <span>⚠ Data Gap:</span> Stores 3–6 in the survey template are unfilled (blank). 
+          Survey results below cover <strong>Sociolla Manados Town Square</strong> and
+          <strong>CuraBeauty Samratulangi</strong> only.
+        </div>
+      </div>
+
+      <!-- Category Space Changes -->
+      <div class="card">
+        <div class="card-title">Category Space Changes (Both Stores)</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="categorySpaceChart"></canvas>
+        </div>
+        <div class="card-sub" style="margin-top:8px">
+          Skincare is expanding at both stores; Personal Care is shrinking at both.
+        </div>
+      </div>
+
+      <!-- Store Expansion Plans -->
+      <div class="card">
+        <div class="card-title">Sociolla 6–12 Month Plans</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px">
+          <div class="finding">
+            <div class="finding-icon">🏗️</div>
+            <div class="finding-text">
+              <strong>2 New Stores Opening</strong><br>
+              Lippo Plaza Kairagi &amp; Tomohon 1st Street store are in pipeline. 
+              Area Manager confirmed no closures or downsizing planned.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">📐</div>
+            <div class="finding-text">
+              <strong>No Location / Catchment Shift</strong><br>
+              Both stores report "tidak ada perubahan lokasi" — no relocation in progress.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">🎯</div>
+            <div class="finding-text">
+              <strong>Dedicated Display Zones Assigned</strong><br>
+              CuraBeauty has dedicated counters for Barenbliss, Lavojoy, Timephoria, Skintific, Glad2Glow, and Hanasui.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid-3 -->
+
+    <!-- Brand Space Growing / Shrinking -->
+    <div class="grid-2" style="margin-top:20px">
+
+      <div class="card">
+        <div class="card-title">🔼 Brands Gaining Display Space</div>
+        <div class="grid-2" style="margin-top:10px; gap:10px">
+          <div>
+            <div class="label-tag blue" style="margin-bottom:8px">Sociolla Mantos</div>
+            <div class="pill-grid">
+              <span class="pill grow">Timephoria</span>
+              <span class="pill grow">Skintific</span>
+            </div>
+          </div>
+          <div>
+            <div class="label-tag purple" style="margin-bottom:8px">CuraBeauty</div>
+            <div class="pill-grid">
+              <span class="pill grow">Barenbliss</span>
+              <span class="pill grow">Timephoria</span>
+              <span class="pill grow">Glad2Glow</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔽 Brands Losing Display Space</div>
+        <div class="grid-2" style="margin-top:10px; gap:10px">
+          <div>
+            <div class="label-tag blue" style="margin-bottom:8px">Sociolla Mantos</div>
+            <div class="pill-grid">
+              <span class="pill shrink">YOU</span>
+              <span class="pill shrink">Dazzle Me</span>
+              <span class="pill shrink">Barenbliss</span>
+            </div>
+          </div>
+          <div>
+            <div class="label-tag purple" style="margin-bottom:8px">CuraBeauty</div>
+            <div class="pill-grid">
+              <span class="pill shrink">Make Over</span>
+              <span class="pill shrink">Scarlett Skincare</span>
+              <span class="pill shrink">Evangeline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 2 — COMPETITOR BRAND LANDSCAPE
+===================================================== -->
+<section id="competitors" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>2 · Competitor Brand Landscape</h2>
+      <span class="badge">Revenue Size (IDR) at Each Surveyed Store</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="alert-note" style="margin-bottom:20px">
+      <span>ℹ Note on units:</span> Brand sizes reported in the survey are in raw IDR. 
+      Values below reflect what was recorded in the "规模/Size" field per brand per store. 
+      Several brands recorded "0" or "–" (no data) — shown as "No data" in the table.
+      Garnier size (0) at Sociolla is marked as-is from the source.
+    </div>
+
+    <div class="grid-2">
+
+      <!-- Sociolla Chart -->
+      <div class="card">
+        <div class="card-title">Brand Revenue Size — Sociolla Manado Town Square (IDR)</div>
+        <div class="chart-wrap" style="height:320px">
+          <canvas id="socollaCompChart"></canvas>
+        </div>
+      </div>
+
+      <!-- CuraBeauty Chart -->
+      <div class="card">
+        <div class="card-title">Brand Revenue Size — CuraBeauty Samratulangi (IDR)</div>
+        <div class="chart-wrap" style="height:320px">
+          <canvas id="curaCompChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Full Competitor Table -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-title" style="margin-bottom:14px">
+        Full Competitor Brand Reference Table (Both Stores)
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Brand</th>
+              <th>Group</th>
+              <th>Size @ Sociolla (IDR)</th>
+              <th>Trend @ Sociolla</th>
+              <th>Size @ CuraBeauty (IDR)</th>
+              <th>Trend @ CuraBeauty</th>
+              <th>ATV @ Sociolla</th>
+            </tr>
+          </thead>
+          <tbody id="compTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 3 — BRAND PERFORMANCE TRENDS
+===================================================== -->
+<section id="trends" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>3 · Brand Performance Trends</h2>
+      <span class="badge">Growth · Stable · Decline · No Data (by store)</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-title">Sociolla Mantos — Brand Trend Breakdown</div>
+        <div class="chart-wrap" style="height:260px">
+          <canvas id="trendSociolla"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">CuraBeauty — Brand Trend Breakdown</div>
+        <div class="chart-wrap" style="height:260px">
+          <canvas id="trendCura"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Key Signal Box -->
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card">
+        <div class="card-title">🟢 Growing Brands (Either Store)</div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Timephoria</span>
+            <span class="trend growth">↑ Both Stores</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Instaperfect</span>
+            <span class="trend growth">↑ Sociolla</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">OMG</span>
+            <span class="trend growth">↑ CuraBeauty</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Glad2Glow</span>
+            <span class="trend growth">↑ CuraBeauty</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Glosspoppi</span>
+            <span class="trend growth">↑ CuraBeauty</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔵 Stable Brands (Either Store)</div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Skintific</span>
+            <span class="trend stable">= Sociolla</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Make Over</span>
+            <span class="trend stable">= Sociolla</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">L'Oréal Paris</span>
+            <span class="trend stable">= Sociolla</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Kahf</span>
+            <span class="trend stable">= Sociolla</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Labore</span>
+            <span class="trend stable">= CuraBeauty</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔴 Declining Brands (Either Store)</div>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Maybelline</span>
+            <span class="trend decline">↓ Both Stores</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Wardah</span>
+            <span class="trend decline">↓ Both Stores</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Glad2Glow</span>
+            <span class="trend decline">↓ Sociolla</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">Skintific</span>
+            <span class="trend decline">↓ CuraBeauty</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px">L'Oréal Paris</span>
+            <span class="trend decline">↓ CuraBeauty</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 4 — CATEGORY DEEP-DIVE
+===================================================== -->
+<section id="categories" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>4 · Category Deep-Dive</h2>
+      <span class="badge">CuraBeauty Only — Revenue Data Available</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="alert-note" style="margin-bottom:20px">
+      <span>⚠ Sociolla Revenue Gap:</span> Sociolla Manados Town Square (Store 1) reported 
+      <strong>"Not Provide"</strong> for all product revenue and share data across every category. 
+      All numerical category analysis below is sourced exclusively from <strong>CuraBeauty Samratulangi</strong>.
+    </div>
+
+    <!-- Makeup Categories -->
+    <div class="section-header" style="margin-top:8px"><h2 style="font-size:17px">4a · Makeup — Top Products by Revenue (CuraBeauty)</h2></div>
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-title">Lips — Top 10 Products by Revenue (IDR)</div>
+        <div class="chart-wrap" style="height:300px">
+          <canvas id="lipsChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Top Makeup Categories — #1 Product Revenue Comparison (IDR)</div>
+        <div class="chart-wrap" style="height:300px">
+          <canvas id="makeupCatChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Makeup Table -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-title" style="margin-bottom:14px">Makeup Category Summary Table — CuraBeauty Samratulangi</div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Rank #1 Product</th>
+              <th>Revenue (IDR)</th>
+              <th>Share</th>
+              <th>Rank #2 Product</th>
+              <th>Revenue (IDR)</th>
+              <th>Core Age</th>
+              <th>Trend</th>
+            </tr>
+          </thead>
+          <tbody id="makeupTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Skincare table (no revenue at CuraBeauty for skincare from source) -->
+    <div class="section-header" style="margin-top:28px"><h2 style="font-size:17px">4b · Skincare & Personal Care — Product Rankings (Sociolla)</h2></div>
+    <div class="alert-note" style="margin-bottom:16px">
+      <span>ℹ Note:</span> Skincare data below is sourced from Sociolla Manado Town Square (Store 1). 
+      These rankings are by brand/product name; revenue figures for most skincare categories at Sociolla 
+      were also reported as "Not Provide."
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Top Skincare Products Mentioned (Sociolla)</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span><strong>#1</strong> Timephoria Stellar Dust Lip Stain</span>
+            <span class="trend growth">Growth</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span><strong>#2</strong> Dear Me Beauty Serum Lip Tint</span>
+            <span class="trend growth">Growth</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span><strong>#3</strong> Timephoria Eternal Lipmatte</span>
+            <span class="trend growth">Growth</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span><strong>#4</strong> Makeover Power Stay Lip Glazed</span>
+            <span class="trend growth">Growth</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+            <span><strong>#5</strong> Makeover Power Stay Transferproof Matte</span>
+            <span class="trend growth">Growth</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0">
+            <span><strong>#6</strong> Maybelline Super Stay Matte Ink</span>
+            <span class="trend decline">Decline</span>
+          </div>
+        </div>
+        <div class="card-sub" style="margin-top:8px">Lips category ranking · Sociolla Mantos · All values "Not Provide"</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cushion / Setting Spray / Primer — Sociolla Top Brands</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+          <div style="font-size:12px;color:var(--text-muted);padding:4px 0;border-bottom:1px solid var(--border)">
+            <strong style="color:var(--text)">Cushion</strong> &nbsp;#1 Jung Sae Mool · #2 Tir Tir Mask Fit Red · #3 Skintific Perfect Stay (Stable/Growth)
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);padding:4px 0;border-bottom:1px solid var(--border)">
+            <strong style="color:var(--text)">Setting Spray</strong> &nbsp;#1 Jung Sae Mool Micro Fitting Mist (Growth) · #2 MOP Bullet Proof · #3 Glad2Glow All Day Matte
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);padding:4px 0;border-bottom:1px solid var(--border)">
+            <strong style="color:var(--text)">Primer</strong> &nbsp;#1 MOP Anti Cakey Gripping Primer (Stable) · #2 Makeover Velvet Matifying · #3 Studio Tropik
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);padding:4px 0">
+            <strong style="color:var(--text)">Lip Care</strong> &nbsp;#1 Pure Paw Paw Ointment (Stable) · #2 Mediheal Pathenol Lips (Growth) · #3 Laneige Sleeping Mask (Stable)
+          </div>
+        </div>
+        <div class="card-sub" style="margin-top:8px">Source: 品类深访 · Store 1 · Sociolla · All revenue "Not Provide"</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 5 — CUSTOMER JOURNEY
+===================================================== -->
+<section id="customers" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>5 · Customer Journey Insights</h2>
+      <span class="badge">Store-Stakeout 1v1 Interviews</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">Makeup Purchases (1v1 Summary)</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div class="finding">
+            <div class="finding-icon">💄</div>
+            <div class="finding-text">
+              <strong>CuraBeauty Customer 1</strong><br>
+              Bought: Hanasui Tintdorable Lip Stain + G2G Perfect Blur &amp; Cover Loose Powder
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">👁️</div>
+            <div class="finding-text">
+              <strong>CuraBeauty Customer 2</strong><br>
+              Bought: Somethinc Brow Wiz Retractable Eyebrow (×2)
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">✨</div>
+            <div class="finding-text">
+              <strong>Sociolla Customer 1</strong><br>
+              Bought: Esqa Blush Cream + Tirtir Cushion Matte
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Skincare Purchases (1v1 Summary)</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div class="finding">
+            <div class="finding-icon">🧴</div>
+            <div class="finding-text">
+              <strong>CuraBeauty Customer 1</strong><br>
+              Skintific 10% Niacinamide Serum + Moisturizer MSH Niacinamide + Hada Labo Whitening Face Wash
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">☀️</div>
+            <div class="finding-text">
+              <strong>CuraBeauty Customer 2</strong><br>
+              Elformula Antiox-C Serum + Nia-Ceramide Bright Mois Gel + YOU Sunbrella Sunscreen
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">🌿</div>
+            <div class="finding-text">
+              <strong>Sociolla Customer 1</strong><br>
+              Skintific Brightening Moisturizer + Serum Brightening + Hada Labo Facial Wash
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Personal Care Purchases (1v1 Summary)</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div class="finding">
+            <div class="finding-icon">💆</div>
+            <div class="finding-text">
+              <strong>CuraBeauty Customer 1</strong><br>
+              CBD Keratin Pro Shampoo + Conditioner
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">🧼</div>
+            <div class="finding-text">
+              <strong>CuraBeauty Customer 2</strong><br>
+              Vaseline Gluta-Hya Body Serum + Lavojoy Let It Glow Body Shine 01
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">🚿</div>
+            <div class="finding-text">
+              <strong>Sociolla Customer 1</strong><br>
+              Lavojoy So So Smooth Shampoo + Conditioner
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Most Purchased Brands -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-title" style="margin-bottom:14px">Most Frequently Purchased Brands Across All 1v1 Interviews (Manado)</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="purchasedBrandsChart"></canvas>
+      </div>
+      <div class="card-sub" style="margin-top:8px">
+        Based on actual purchase observations at CuraBeauty &amp; Sociolla Mantos. 
+        Skintific and Lavojoy each appeared in multiple separate customer purchases.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 6 — COUNTER / DISPLAY CHANGES
+===================================================== -->
+<section id="displays" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>6 · Counter &amp; Display Changes</h2>
+      <span class="badge">Sociolla Mantos — Competitor Counter Intelligence</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Counter Position Changes — Sociolla Mantos</div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr><th>Brand</th><th>Counter Position</th><th>Area Change</th><th>Prime Display</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>L'Oréal Paris</td><td>Move – Downsize</td><td>Tetap Sama (unchanged)</td><td>Hair Oil</td></tr>
+              <tr><td>Maybelline</td><td>Move – Downsize</td><td>Move – Downsize display</td><td>Lip Series / Vynil Ink</td></tr>
+              <tr><td>Wardah</td><td>Downsize</td><td>Full Row → 50% → 2 rows</td><td>Regular shelving only</td></tr>
+              <tr><td>Make Over</td><td>Upsize: Gondola → End Backwall</td><td>Gondola Island 1-side → End Backwall full</td><td>Regular tester display</td></tr>
+              <tr><td>Kahf</td><td>Downsize</td><td>2 Row → 1 Row</td><td>No highlight</td></tr>
+              <tr><td>Instaperfect</td><td>Stable</td><td>Stable 1 Row</td><td>No highlight</td></tr>
+              <tr><td>Labore</td><td>Downsize</td><td>2 Row → 1 Row</td><td>No highlight</td></tr>
+              <tr><td>Skintific</td><td>Skincare stable; Cosmetic upsize</td><td>Cosmetic: ½ Side → Full Side Gondola</td><td>Cushion Series (Skintific Perfect Stay Velvet Matte Blue)</td></tr>
+              <tr><td>Glad2Glow</td><td>Upsize vs old position</td><td>2 Row → ½ Side Gondola</td><td>No highlight</td></tr>
+              <tr><td>Timephoria</td><td>Upsize – cosmetic expanded</td><td>Shelving → End Backwall</td><td>Lip product / Aion Superstay Lip Tatto Ink</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="alert-note" style="margin-top:10px">
+          <span>ℹ Note:</span> Garnier had 0 size recorded at Sociolla. 
+          OMG, Emina, Crystallure, lite+, and Tavi were present in the template but marked "No" or had no display data at Sociolla.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Counter Upgrade Activity (Sociolla Mantos)</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div class="finding">
+            <div class="finding-icon">🆕</div>
+            <div class="finding-text">
+              <strong>L'Oréal Paris</strong> — New Acrylic + New POP (futuristic design, luxury feel). 
+              Only brand at Sociolla with confirmed fixture upgrade.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">📦</div>
+            <div class="finding-text">
+              <strong>Maybelline</strong> — Old POP and Acrylic; no upgrade. 
+              Running promotions: Supermate Ink Disc 20%, Mascara Magnum Big Shoot Disc 45%.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">🛍️</div>
+            <div class="finding-text">
+              <strong>Skintific</strong> — New Acrylic Cushion display (previously no acrylic display for Cushion / Top Tray). 
+              CuraBeauty only.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">🏷️</div>
+            <div class="finding-text">
+              <strong>Paragon &amp; Feimei brands</strong> — All report "masih yang lama" (still old fixtures). 
+              No material upgrades observed across Wardah, Make Over, OMG, Emina, Glad2Glow, Timephoria.
+            </div>
+          </div>
+          <div class="finding">
+            <div class="finding-icon">💸</div>
+            <div class="finding-text">
+              <strong>Active Promotions (Sociolla):</strong> Skintific up to 45% disc (select items / limited days); 
+              Timephoria 25% disc (select items); Make Over 15% disc.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 7 — MAIN CATEGORY REVENUE CHART
+===================================================== -->
+<section id="revoverview" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>7 · Revenue by Category Type</h2>
+      <span class="badge">CuraBeauty Top #1 Product Revenue per Category (IDR)</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">
+        Category Revenue Snapshot — #1 SKU Revenue per Makeup Category (CuraBeauty Samratulangi, IDR)
+      </div>
+      <div class="chart-wrap" style="height:340px">
+        <canvas id="revOverviewChart"></canvas>
+      </div>
+      <div class="card-sub" style="margin-top:10px">
+        Skin Tint (G2G Flawless, IDR 30M) and Cushion (G2G Perfect Cover, IDR 35M) lead all makeup categories. 
+        Mascara (BNB Roll To Volume, IDR 18M) ranks 3rd. Lip products are split across many SKUs; top lip product is OMG Matte Last at IDR 10M.
+        Source: 品类深访 · Store 2 · CuraBeauty · Jan 2026–present.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     SECTION 8 — KEY FINDINGS & DATA GAPS
+===================================================== -->
+<section id="findings" class="section section-anchor">
+  <div class="container">
+
+    <div class="section-header">
+      <h2>8 · Key Findings &amp; Data Gaps</h2>
+      <span class="badge">Summary for Decision Makers</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="grid-2">
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card-title">🔍 Key Findings</div>
+
+        <div class="finding">
+          <div class="finding-icon">📈</div>
+          <div class="finding-text">
+            <strong>Feimei brands dominate at Sociolla</strong> — Skintific alone records IDR 420M at Sociolla Mantos, 
+            dwarfing all L'Oréal and Paragon brands combined at that store. 
+            Timephoria is growing at both surveyed stores.
+          </div>
+        </div>
+
+        <div class="finding">
+          <div class="finding-icon">📉</div>
+          <div class="finding-text">
+            <strong>Maybelline &amp; Wardah declining universally</strong> — Both brands show downward trends 
+            at both Sociolla and CuraBeauty. L'Oréal Paris is declining at CuraBeauty while stable at Sociolla.
+          </div>
+        </div>
+
+        <div class="finding">
+          <div class="finding-icon">💡</div>
+          <div class="finding-text">
+            <strong>Skincare category expanding; Personal Care shrinking</strong> — Both stores confirmed 
+            Skincare is gaining shelf space and prominence. Personal Care is being deprioritised at both locations.
+          </div>
+        </div>
+
+        <div class="finding">
+          <div class="finding-icon">🧪</div>
+          <div class="finding-text">
+            <strong>Skintific &amp; Hada Labo dominate skincare purchases</strong> — 
+            Across all 6 skincare customer interviews, Skintific and Hada Labo appeared most frequently in final purchases, 
+            driven by niacinamide brightening formulas and loyalty to the brand.
+          </div>
+        </div>
+
+        <div class="finding">
+          <div class="finding-icon">🎯</div>
+          <div class="finding-text">
+            <strong>TikTok &amp; KOL content driving purchase decisions</strong> — 
+            Multiple category BA reports cite "TikTok promotion," "KOL/Seleb content," and "influencer" 
+            as key drivers of top-selling products (OMG, BNB, Implora, G2G, Timephoria).
+          </div>
+        </div>
+
+        <div class="finding">
+          <div class="finding-icon">📦</div>
+          <div class="finding-text">
+            <strong>Bundle strategy largely absent</strong> — Across all 14 product categories surveyed, 
+            the dominant response to "top bundles" is "Tidak ada" (none) or "No Bundle." 
+            Only isolated examples exist (e.g., OMG 2-shade bundle, DM Buy 2 Get 1 Free).
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card-title">⚠️ Data Gaps &amp; Inconsistencies</div>
+
+        <div class="finding" style="border-color:rgba(247,129,102,.3)">
+          <div class="finding-icon">🔲</div>
+          <div class="finding-text">
+            <strong>Stores 3–6 completely empty</strong> — The survey template allocated rows for 6 stores per channel; 
+            only Stores 1 and 2 have any data. Remaining 4 store slots have no respondents recorded.
+          </div>
+        </div>
+
+        <div class="finding" style="border-color:rgba(247,129,102,.3)">
+          <div class="finding-icon">💰</div>
+          <div class="finding-text">
+            <strong>Sociolla revenue data missing entirely</strong> — Store 1 (Sociolla Mantos) recorded 
+            "Not Provide" for all product revenue, share %, and ATV data across every makeup and skincare category. 
+            This limits benchmarking between the two stores.
+          </div>
+        </div>
+
+        <div class="finding" style="border-color:rgba(247,129,102,.3)">
+          <div class="finding-icon">🏷️</div>
+          <div class="finding-text">
+            <strong>Garnier size = 0 at Sociolla; several brands listed with "0"</strong> — 
+            Brand size fields for Garnier (Sociolla), OMG, Emina, Crystallure, lite+, Tavi (Sociolla) are 
+            recorded as numeric "0" in the source — likely indicating no presence, not actual zero revenue.
+          </div>
+        </div>
+
+        <div class="finding" style="border-color:rgba(247,129,102,.3)">
+          <div class="finding-icon">📋</div>
+          <div class="finding-text">
+            <strong>Price data mostly inaccessible</strong> — For all brands, price adjustment data is 
+            answered as "tidak dapat memberikan data" (cannot provide data). 
+            Only Maybelline confirmed some price increases without specifics.
+          </div>
+        </div>
+
+        <div class="finding" style="border-color:rgba(247,129,102,.3)">
+          <div class="finding-icon">👥</div>
+          <div class="finding-text">
+            <strong>Customer interview slots 4–6 (Makeup &amp; Skincare) unfilled</strong> — 
+            The template allowed for 6 customer observations per category but only 3 per category 
+            have recorded data. Customer slots 4, 5, 6 are blank.
+          </div>
+        </div>
+
+        <div class="finding" style="border-color:rgba(247,129,102,.3)">
+          <div class="finding-icon">🏪</div>
+          <div class="finding-text">
+            <strong>KA channel master (Sheet7) shows all accounts as "待分工 / To assign"</strong> — 
+            Guardian, Sociolla, Watsons and other KA accounts in the channel master table 
+            have no data-availability level or qualified store marked yet.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+<footer id="footer">
+  <div class="container">
+    <p>HEBE Offline Store Survey — Manado, North Sulawesi · Survey Window Jan 2026 – Present
+    · Dashboard generated from source file: <em>HEBE-OFFLINE_STORE_SURVEY_26-MANADO_Salin.xlsx</em></p>
+    <p style="margin-top:4px">All data strictly from original source. No values were modified or inferred beyond what the survey records.</p>
+  </div>
+</footer>
+
+<!-- =====================================================
+     CHART.JS — ALL CHARTS
+===================================================== -->
+<script>
+/* =====================================================
+   GLOBAL CHART DEFAULTS
+===================================================== */
+Chart.defaults.color          = '#8b949e';
+Chart.defaults.borderColor    = '#30363d';
+Chart.defaults.font.family    = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+Chart.defaults.font.size      = 12;
+Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(22,27,34,0.95)';
+Chart.defaults.plugins.tooltip.borderColor     = '#30363d';
+Chart.defaults.plugins.tooltip.borderWidth     = 1;
+Chart.defaults.plugins.tooltip.padding         = 10;
+Chart.defaults.plugins.tooltip.titleColor      = '#e6edf3';
+Chart.defaults.plugins.tooltip.bodyColor       = '#8b949e';
+
+/* helper: format IDR */
+function fmtIDR(v) {
+  if (v >= 1_000_000) return (v/1_000_000).toFixed(0) + ' M';
+  if (v >= 1_000)     return (v/1_000).toFixed(0) + ' K';
+  return v;
+}
+
+/* =====================================================
+   1. STORE STATUS DOUGHNUT
+===================================================== */
+new Chart(document.getElementById('storeStatusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Surveyed (Data Available)', 'Pending / Not Filled'],
+    datasets: [{
+      data: [2, 4],
+      backgroundColor: ['#3fb950', '#30363d'],
+      borderColor:     ['#3fb950', '#30363d'],
+      borderWidth: 2,
+      hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } },
+      tooltip: { callbacks: {
+        label: ctx => ` ${ctx.label}: ${ctx.raw} stores`
+      }}
+    }
+  }
+});
+
+/* =====================================================
+   2. CATEGORY SPACE CHANGES (Horizontal Bar)
+===================================================== */
+new Chart(document.getElementById('categorySpaceChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Skincare', 'Cosmetics / Makeup', 'Personal Care'],
+    datasets: [
+      {
+        label: 'Sociolla Mantos',
+        data: [2, 1, -1],   // +2 = Expanding, +1 = Minor expand, -1 = Shrinking
+        backgroundColor: '#58a6ff99',
+        borderColor: '#58a6ff',
+        borderWidth: 1.5,
+        borderRadius: 4
+      },
+      {
+        label: 'CuraBeauty',
+        data: [2, 1, -1],
+        backgroundColor: '#d2a8ff99',
+        borderColor: '#d2a8ff',
+        borderWidth: 1.5,
+        borderRadius: 4
+      }
+    ]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: {
+        min: -2, max: 3,
+        ticks: {
+          callback: v => v > 0 ? '▲ Growing' : v < 0 ? '▼ Shrinking' : 'Flat',
+          maxTicksLimit: 3
+        },
+        grid: { color: '#30363d' }
+      },
+      y: { grid: { display: false } }
+    },
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 12, padding: 16 } },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const labels = { 2:'Expanding', 1:'Minor Expand', '-1':'Shrinking' };
+            return ` ${ctx.dataset.label}: ${labels[ctx.raw] || ctx.raw}`;
+          }
+        }
+      }
+    }
+  }
+});
+
+/* =====================================================
+   3. COMPETITOR SIZE — SOCIOLLA (Horizontal Bar)
+===================================================== */
+const sociollaData = [
+  { brand: 'Skintific',    size: 420000000, group: 'feimei'  },
+  { brand: 'Timephoria',   size: 80000000,  group: 'feimei'  },
+  { brand: 'Glad2Glow',    size: 52000000,  group: 'feimei'  },
+  { brand: 'Make Over',    size: 55000000,  group: 'paragon' },
+  { brand: 'Maybelline',   size: 50000000,  group: 'loreal'  },
+  { brand: 'L\'Oréal Paris',size: 24000000, group: 'loreal'  },
+  { brand: 'Instaperfect', size: 12000000,  group: 'paragon' },
+  { brand: 'Wardah',       size: 9000000,   group: 'paragon' },
+  { brand: 'Kahf',         size: 5000000,   group: 'paragon' },
+  { brand: 'Labore',       size: 4000000,   group: 'feimei'  },
+  { brand: 'Emina',        size: 2000000,   group: 'paragon' },
+].sort((a,b)=>b.size-a.size);
+
+const groupColors = { loreal:'#ff7088', paragon:'#3fb950', feimei:'#bf84ff' };
+
+new Chart(document.getElementById('socollaCompChart'), {
+  type: 'bar',
+  data: {
+    labels: sociollaData.map(d=>d.brand),
+    datasets: [{
+      label: 'Revenue Size (IDR)',
+      data: sociollaData.map(d=>d.size),
+      backgroundColor: sociollaData.map(d => groupColors[d.group] + 'bb'),
+      borderColor:     sociollaData.map(d => groupColors[d.group]),
+      borderWidth: 1.5,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { 
+        ticks: { callback: v => fmtIDR(v) },
+        grid: { color: '#30363d' }
+      },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: {
+        label: ctx => ` IDR ${ctx.raw.toLocaleString()}`
+      }}
+    }
+  }
+});
+
+/* =====================================================
+   4. COMPETITOR SIZE — CURABEAUTY (Horizontal Bar)
+===================================================== */
+const curaData = [
+  { brand: 'Glad2Glow',    size: 200000000, group: 'feimei'  },
+  { brand: 'Skintific',    size: 150000000, group: 'feimei'  },
+  { brand: 'Timephoria',   size: 50000000,  group: 'feimei'  },
+  { brand: 'OMG',          size: 50000000,  group: 'paragon' },
+  { brand: 'Glosspoppi',   size: 40000000,  group: 'feimei'  },
+  { brand: 'Make Over',    size: 30000000,  group: 'paragon' },
+  { brand: 'Wardah',       size: 20000000,  group: 'paragon' },
+  { brand: 'Garnier',      size: 15000000,  group: 'loreal'  },
+  { brand: 'Maybelline',   size: 15000000,  group: 'loreal'  },
+  { brand: 'Labore',       size: 10000000,  group: 'feimei'  },
+  { brand: 'Facerinna',    size: 10000000,  group: 'feimei'  },
+  { brand: 'Emina',        size: 10000000,  group: 'paragon' },
+  { brand: 'Kahf',         size: 5000000,   group: 'paragon' },
+  { brand: 'Next Prime',   size: 3000000,   group: 'feimei'  },
+  { brand: 'L\'Oréal Paris',size: 3000000,  group: 'loreal'  },
+  { brand: 'Bodibreze',    size: 1000000,   group: 'feimei'  },
+].sort((a,b)=>b.size-a.size);
+
+new Chart(document.getElementById('curaCompChart'), {
+  type: 'bar',
+  data: {
+    labels: curaData.map(d=>d.brand),
+    datasets: [{
+      label: 'Revenue Size (IDR)',
+      data: curaData.map(d=>d.size),
+      backgroundColor: curaData.map(d => groupColors[d.group] + 'bb'),
+      borderColor:     curaData.map(d => groupColors[d.group]),
+      borderWidth: 1.5,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: { callback: v => fmtIDR(v) },
+        grid: { color: '#30363d' }
+      },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: {
+        label: ctx => ` IDR ${ctx.raw.toLocaleString()}`
+      }}
+    }
+  }
+});
+
+/* =====================================================
+   5. BRAND TREND BREAKDOWNS (Donut × 2)
+===================================================== */
+// Sociolla: L'Oréal Paris=Stable, Maybelline=Decline, Wardah=Decline, MakeOver=Stable,
+//           Kahf=Stable, Instaperfect=Growth, Labore=Decline, Skintific=Stable,
+//           Glad2Glow=Decline, Timephoria=Growth
+const sociollaGrowth=2, sociollaStable=4, sociollaDecline=4, sociollaNone=2;
+new Chart(document.getElementById('trendSociolla'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Growth', 'Stable', 'Decline', 'No Data/Absent'],
+    datasets: [{
+      data: [sociollaGrowth, sociollaStable, sociollaDecline, sociollaNone],
+      backgroundColor: ['#3fb95099','#58a6ff99','#f7816699','#30363d'],
+      borderColor:     ['#3fb950',  '#58a6ff',  '#f78166',  '#30363d'],
+      borderWidth: 2, hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: {
+      legend: { position:'bottom', labels:{ boxWidth:12, padding:14 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} brands` } }
+    }
+  }
+});
+
+// CuraBeauty: L'Oréal Paris=Decline, Maybelline=Decline, Garnier=Decline, Wardah=Decline,
+//             MakeOver=Decline, OMG=Growth, Emina=Decline, Kahf=Decline, Instaperfect=Decline,
+//             Labore=Stable, Skintific=Decline, Glad2Glow=Growth, Timephoria=Growth,
+//             Facerinna=Stable, Glosspoppi=Growth
+const curaGrowth=4, curaStable=2, curaDecline=9, curaNone=0;
+new Chart(document.getElementById('trendCura'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Growth', 'Stable', 'Decline', 'No Data/Absent'],
+    datasets: [{
+      data: [curaGrowth, curaStable, curaDecline, curaNone],
+      backgroundColor: ['#3fb95099','#58a6ff99','#f7816699','#30363d'],
+      borderColor:     ['#3fb950',  '#58a6ff',  '#f78166',  '#30363d'],
+      borderWidth: 2, hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '60%',
+    plugins: {
+      legend: { position:'bottom', labels:{ boxWidth:12, padding:14 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} brands` } }
+    }
+  }
+});
+
+/* =====================================================
+   6. LIPS — TOP 10 (CuraBeauty)
+===================================================== */
+const lipsData = [
+  { product: 'OMG Matte Last Lip Cream',        revenue: 10000000 },
+  { product: 'Implora Urban Lip Cream',          revenue: 9000000  },
+  { product: 'Hanasui Mattedorable Lip Cream',   revenue: 8700000  },
+  { product: 'Raecca Glow Up Tint',              revenue: 8500000  },
+  { product: 'BNB Peach Makes Liptint',          revenue: 7500000  },
+  { product: 'DM Ink Gloss Liptint',             revenue: 7000000  },
+  { product: 'Timephoria Stellar Dust Lip Stain',revenue: 6800000  },
+  { product: 'Hanasui Next Instant Gloss',       revenue: 6500000  },
+  { product: 'Xixiu Define Lip Tint Stain',      revenue: 6000000  },
+  { product: 'Hanasui Lip Tint for Teen',        revenue: 5500000  },
+];
+
+new Chart(document.getElementById('lipsChart'), {
+  type: 'bar',
+  data: {
+    labels: lipsData.map(d=>d.product),
+    datasets: [{
+      label: 'Revenue (IDR)',
+      data: lipsData.map(d=>d.revenue),
+      backgroundColor: 'rgba(210,168,255,0.65)',
+      borderColor:     '#d2a8ff',
+      borderWidth: 1.5,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: {
+        ticks: { callback: v => fmtIDR(v) },
+        grid: { color: '#30363d' }
+      },
+      y: { grid: { display: false }, ticks: { font: { size: 10.5 } } }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` IDR ${ctx.raw.toLocaleString()}` } }
+    }
+  }
+});
+
+/* =====================================================
+   7. MAKEUP CATEGORY TOP-PRODUCT COMPARISON
+===================================================== */
+const makeupCatNames = ['Cushion','Skin Tint','Mascara (Top)','Foundation','Loose Powder','Compact Powder','Eyebrow','Eyeliner','Eyeshadow','Cheek/Blush'];
+const makeupCatRevenues = [35000000, 30000000, 18000000, 12000000, 8000000, 7500000, 9000000, 6000000, 5000000, 4800000];
+const makeupCatColors = [
+  '#58a6ff99','#58a6ff99','#3fb95099','#ffa65799','#d2a8ff99','#d2a8ff99',
+  '#f7816699','#f7816699','#ffa65799','#3fb95099'
+];
+const makeupCatBorders = [
+  '#58a6ff','#58a6ff','#3fb950','#ffa657','#d2a8ff','#d2a8ff',
+  '#f78166','#f78166','#ffa657','#3fb950'
+];
+
+new Chart(document.getElementById('makeupCatChart'), {
+  type: 'bar',
+  data: {
+    labels: makeupCatNames,
+    datasets: [{
+      label: '#1 Product Revenue (IDR)',
+      data: makeupCatRevenues,
+      backgroundColor: makeupCatColors,
+      borderColor:     makeupCatBorders,
+      borderWidth: 1.5,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      y: { ticks: { callback: v => fmtIDR(v) }, grid: { color: '#30363d' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` IDR ${ctx.raw.toLocaleString()}` } }
+    }
+  }
+});
+
+/* =====================================================
+   8. MOST PURCHASED BRANDS (Customer 1v1)
+===================================================== */
+new Chart(document.getElementById('purchasedBrandsChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Skintific','Hada Labo','Lavojoy','Hanasui','G2G (Glad2Glow)','Somethinc','Esqa','Tirtir','YOU','Vaseline','Elformula','CBD'],
+    datasets: [{
+      label: 'Times Purchased Across Interviews',
+      data: [3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1],
+      backgroundColor: '#58a6ff99',
+      borderColor: '#58a6ff',
+      borderWidth: 1.5,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      y: { min: 0, max: 4, ticks: { stepSize: 1 }, grid: { color: '#30363d' } },
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` Purchased by ${ctx.raw} customer(s)` } }
+    }
+  }
+});
+
+/* =====================================================
+   9. REVENUE OVERVIEW — CATEGORY LEADER (Area-like)
+===================================================== */
+new Chart(document.getElementById('revOverviewChart'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Cushion\n(G2G Perfect Cover)',
+      'Skin Tint\n(G2G Flawless)',
+      'Mascara\n(BNB Roll To Vol)',
+      'Eyebrow\n(Implora Pencil)',
+      'Loose Powder\n(Sea Makeup Acne)',
+      'Compact Powder\n(OMG Cover Last)',
+      'Foundation\n(OMG Coverlast)',
+      'Eyeliner\n(Xixiu Divane)',
+      'Eyeshadow\n(Pink Flash 12C)',
+      'Cheek\n(Hanasui Cheek)',
+      'Lips #1\n(OMG Matte Last)',
+    ],
+    datasets: [{
+      type: 'bar',
+      label: '#1 SKU Revenue (IDR)',
+      data: [35000000, 30000000, 18000000, 9000000, 8000000, 7500000, 12000000, 6000000, 5000000, 4800000, 10000000],
+      backgroundColor: [
+        '#58a6ffcc','#58a6ffcc','#3fb950cc','#d2a8ffcc','#ffa657cc',
+        '#ffa657cc','#3fb950cc','#f78166cc','#f78166cc','#3fb950cc','#d2a8ffcc'
+      ],
+      borderColor: [
+        '#58a6ff','#58a6ff','#3fb950','#d2a8ff','#ffa657',
+        '#ffa657','#3fb950','#f78166','#f78166','#3fb950','#d2a8ff'
+      ],
+      borderWidth: 1.5,
+      borderRadius: 6,
+      order: 1
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      y: { ticks: { callback: v => fmtIDR(v) }, grid: { color: '#30363d' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: {
+        title: ctx => ctx[0].label.replace(/\n/g,' — '),
+        label: ctx => ` IDR ${ctx.raw.toLocaleString()}`
+      }}
+    }
+  }
+});
+
+/* =====================================================
+   COMPETITOR TABLE — Build Dynamically
+===================================================== */
+const compRows = [
+  { brand:"L'Oréal Paris", group:'loreal',  soc:24000000,  trendSoc:'Stable',  cura:3000000,   trendCura:'Decline', atv:'250k–350k IDR' },
+  { brand:'Maybelline',    group:'loreal',  soc:50000000,  trendSoc:'Decline', cura:15000000,  trendCura:'Decline', atv:'200k–300k IDR' },
+  { brand:'Garnier',       group:'loreal',  soc:0,         trendSoc:'No Data', cura:15000000,  trendCura:'Decline', atv:'—' },
+  { brand:'Wardah',        group:'paragon', soc:9000000,   trendSoc:'Decline', cura:20000000,  trendCura:'Decline', atv:'100k–200k IDR' },
+  { brand:'Make Over',     group:'paragon', soc:55000000,  trendSoc:'Stable',  cura:30000000,  trendCura:'Decline', atv:'200k–300k IDR' },
+  { brand:'OMG',           group:'paragon', soc:0,         trendSoc:'No Data', cura:50000000,  trendCura:'Growth',  atv:'—' },
+  { brand:'Emina',         group:'paragon', soc:2000000,   trendSoc:'No Data', cura:10000000,  trendCura:'Decline', atv:'—' },
+  { brand:'Kahf',          group:'paragon', soc:5000000,   trendSoc:'Stable',  cura:5000000,   trendCura:'Decline', atv:'50k–150k IDR' },
+  { brand:'Instaperfect',  group:'paragon', soc:12000000,  trendSoc:'Growth',  cura:2000000,   trendCura:'Decline', atv:'100k–200k IDR' },
+  { brand:'Labore',        group:'feimei',  soc:4000000,   trendSoc:'Decline', cura:10000000,  trendCura:'Stable',  atv:'—' },
+  { brand:'Skintific',     group:'feimei',  soc:420000000, trendSoc:'Stable',  cura:150000000, trendCura:'Decline', atv:'250k–400k IDR' },
+  { brand:'Glad2Glow',     group:'feimei',  soc:52000000,  trendSoc:'Decline', cura:200000000, trendCura:'Growth',  atv:'100k–200k IDR' },
+  { brand:'Timephoria',    group:'feimei',  soc:80000000,  trendSoc:'Growth',  cura:50000000,  trendCura:'Growth',  atv:'150k–250k IDR' },
+  { brand:'Facerinna',     group:'feimei',  soc:0,         trendSoc:'No Data', cura:10000000,  trendCura:'Stable',  atv:'—' },
+  { brand:'Glosspoppi',    group:'feimei',  soc:0,         trendSoc:'No Data', cura:40000000,  trendCura:'Growth',  atv:'—' },
+];
+
+const trendBadge = t => {
+  const map = {
+    'Growth':  `<span class="trend growth">↑ Growth</span>`,
+    'Decline': `<span class="trend decline">↓ Decline</span>`,
+    'Stable':  `<span class="trend stable">= Stable</span>`,
+    'No Data': `<span class="trend no-data">— No Data</span>`
+  };
+  return map[t] || `<span class="trend no-data">—</span>`;
+};
+
+const groupPill = g => {
+  const map = {
+    loreal:  `<span class="group-pill loreal">L'Oréal</span>`,
+    paragon: `<span class="group-pill paragon">Paragon</span>`,
+    feimei:  `<span class="group-pill feimei">Feimei</span>`
+  };
+  return map[g] || '';
+};
+
+const tbody = document.getElementById('compTableBody');
+compRows.forEach(r => {
+  const maxSize = 420000000;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="font-weight:600">${r.brand}</td>
+    <td>${groupPill(r.group)}</td>
+    <td>
+      <div class="bar-cell">
+        <div class="bar-bg"><div class="bar-fill" style="width:${r.soc/maxSize*100}%;background:#58a6ff"></div></div>
+        <span style="font-size:11px;white-space:nowrap">${r.soc ? 'IDR ' + r.soc.toLocaleString() : '— (0)'}</span>
+      </div>
+    </td>
+    <td>${trendBadge(r.trendSoc)}</td>
+    <td>
+      <div class="bar-cell">
+        <div class="bar-bg"><div class="bar-fill" style="width:${r.cura/maxSize*100}%;background:#d2a8ff"></div></div>
+        <span style="font-size:11px;white-space:nowrap">${r.cura ? 'IDR ' + r.cura.toLocaleString() : '— (0)'}</span>
+      </div>
+    </td>
+    <td>${trendBadge(r.trendCura)}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${r.atv}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+/* =====================================================
+   MAKEUP SUMMARY TABLE — Build Dynamically
+===================================================== */
+const makeupRows = [
+  { cat:'Lips',          p1:'OMG Matte Last Lip Cream',          rev1:10000000, share1:'10%', p2:'Implora Urban Lip Cream',          rev2:9000000,   age:'14–20',  trend:'Growth/Mixed' },
+  { cat:'Cushion',       p1:'G2G Perfect Cover Cushion (Pink)',   rev1:35000000, share1:'29%', p2:'(No further data provided)',       rev2:null,      age:'15–30',  trend:'Stay' },
+  { cat:'Foundation',    p1:'OMG Coverlast Liquid Foundation',    rev1:12000000, share1:'24%', p2:'Implora Liquid Foundation',        rev2:10000000,  age:'18–35',  trend:'Growth/Stay' },
+  { cat:'Skin Tint',     p1:'G2G Flawless Blurring Skin Tint',   rev1:30000000, share1:'38%', p2:'YOU Brightening Skin Tint',        rev2:11000000,  age:'15–35',  trend:'Stay/Decline' },
+  { cat:'Loose Powder',  p1:'Sea Makeup Acne Loose Powder',       rev1:8000000,  share1:'13%', p2:'G2G Blur & Cover Loose Powder',   rev2:7900000,   age:'15–35',  trend:'Growth/Mixed' },
+  { cat:'Compact Powder',p1:'OMG Cover Last TWC',                 rev1:7500000,  share1:'25%', p2:'G2G Perfect Blurring Powder Fndn', rev2:7000000,   age:'15–35',  trend:'Growth/Stay' },
+  { cat:'Mascara',       p1:'BNB Roll To Volume Mascara',         rev1:18000000, share1:'12%', p2:'BNB Roll To High Mascara',         rev2:17500000,  age:'18–35',  trend:'Stay' },
+  { cat:'Eyebrow',       p1:'Implora Eyebrow Pencil',             rev1:9000000,  share1:'23%', p2:'Xixiu Divine Eyebrow Pencil',     rev2:7000000,   age:'18–35',  trend:'Growth' },
+  { cat:'Eyeliner',      p1:'Xixiu Divane Eyeliner Pen Waterproof',rev1:6000000, share1:'30%', p2:'DM Hyper Stay Eyeliner',          rev2:4000000,   age:'18–35',  trend:'Growth' },
+  { cat:'Eyeshadow',     p1:'Pink Flash 12 Color Eyeshadow',      rev1:5000000,  share1:'25%', p2:'Salsa Galaxy Eyeshadow Palette',  rev2:4500000,   age:'18–35',  trend:'Decline/Growth' },
+  { cat:'Cheek / Blush', p1:'Hanasui Perfect Cheek Blush',        rev1:4800000,  share1:'16%', p2:'Hanasui Next Level Bouncy Blush', rev2:4500000,   age:'18–35',  trend:'Growth' },
+];
+
+const tbody2 = document.getElementById('makeupTableBody');
+makeupRows.forEach(r => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="font-weight:600">${r.cat}</td>
+    <td style="font-size:12px">${r.p1}</td>
+    <td style="font-size:12px">IDR ${r.rev1.toLocaleString()}</td>
+    <td><span class="label-tag purple">${r.share1}</span></td>
+    <td style="font-size:12px">${r.p2}</td>
+    <td style="font-size:12px">${r.rev2 ? 'IDR ' + r.rev2.toLocaleString() : '—'}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${r.age}</td>
+    <td style="font-size:12px;color:var(--text-muted)">${r.trend}</td>
+  `;
+  tbody2.appendChild(tr);
+});
+
+</script>
+</body>
+</html>
